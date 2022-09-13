@@ -115,7 +115,18 @@ impl IsoLatin9Char {
     /// TODO
     /// ```
     pub fn is_digit(&self, radix: u8) -> bool {
-        todo!()
+        assert!(radix <= 36, "is_digit: radix is too high (maximum 36)");
+        let mut latin9char = self.0;
+        if latin9char >= b'a' && latin9char <= b'z' {
+        	// convert to uppercase
+        	latin9char -= b'a';
+        	latin9char += b'A';
+        }
+        if radix <= 10 {
+		return latin9char >= b'0' && latin9char <= b'0' + radix - 1
+	} else {
+		return self.is_digit(10) || latin9char >= b'A' && latin9char <= b'A' + radix - 11
+	}
     }
 
     /// Returns `true` if this character has one of the general categories for numbers.
@@ -322,8 +333,12 @@ mod api_tests {
     fn is_digit() {
         assert!(IsoLatin9Char(b'0').is_digit(10));
         assert!(IsoLatin9Char(b'1').is_digit(2));
+        assert!(!IsoLatin9Char(b'2').is_digit(2));
         assert!(IsoLatin9Char(b'2').is_digit(3));
         assert!(IsoLatin9Char(b'9').is_digit(10));
+        assert!(IsoLatin9Char(b'0').is_digit(16),);
+        assert!(IsoLatin9Char(b'5').is_digit(16),);
+        assert!(IsoLatin9Char(b'9').is_digit(16),);
         assert!(IsoLatin9Char(b'a').is_digit(16),);
         assert!(IsoLatin9Char(b'A').is_digit(16),);
         assert!(IsoLatin9Char(b'b').is_digit(16),);
@@ -331,6 +346,9 @@ mod api_tests {
         assert!(IsoLatin9Char(b'A').is_digit(36),);
         assert!(IsoLatin9Char(b'z').is_digit(36),);
         assert!(IsoLatin9Char(b'Z').is_digit(36),);
+        assert!(IsoLatin9Char(b'0').is_digit(36),);
+        assert!(IsoLatin9Char(b'5').is_digit(36),);
+        assert!(IsoLatin9Char(b'9').is_digit(36),);
         assert!(!IsoLatin9Char(b'[').is_digit(36));
         assert!(!IsoLatin9Char(b'`').is_digit(36));
         assert!(!IsoLatin9Char(b'{').is_digit(36));
